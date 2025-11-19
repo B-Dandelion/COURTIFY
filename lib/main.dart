@@ -11,13 +11,224 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Courtify',
       theme: ThemeData(
         primaryColor: const Color(0xFFb00000),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFb00000)),
+        fontFamily: 'SUIT',
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(
+            fontWeight: FontWeight.w300
+          ),
+          bodyLarge: TextStyle(
+            fontWeight: FontWeight.w700
+          )
+        ),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'COURTIFY'),
+      home: const LoginPage(),
       debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _onLogin() {
+    if (_formKey.currentState!.validate()) {
+      // TODO: 실제 로그인 로직
+      // 지금은 그냥 홈 화면으로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const MyHomePage(title: 'COURTIFY'),
+        ),
+      );
+    }
+  }
+
+  void _onSignUp() {
+    // TODO: 회원가입 화면 따로 만들면 여기에서 네비게이션
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('회원가입 기능은 추후 추가 예정입니다.')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const mainRed = Color(0xFFb00000);
+
+    return Scaffold(
+      backgroundColor: mainRed,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 🔴 로고 영역 - 여기 나중에 이미지로 교체하면 됨
+              Column(
+                children: [
+                  // TODO: 여기 Image.asset(...)으로 로고 넣으면 됨
+                  // 예: Image.asset('assets/courtify_logo.png', height: 80),
+                  const Icon(
+                    Icons.gavel_rounded,
+                    size: 72,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'COURTIFY',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 40),
+
+              // 로그인 카드
+              Container(
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        '로그인',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 이메일 입력
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(
+                          labelText: '이메일',
+                          prefixIcon: Icon(Icons.email_outlined),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '이메일을 입력해 주세요.';
+                          }
+                          if (!value.contains('@')) {
+                            return '올바른 이메일 형식을 입력해 주세요.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // 비밀번호 입력
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: '비밀번호',
+                          prefixIcon: Icon(Icons.lock_outline),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '비밀번호를 입력해 주세요.';
+                          }
+                          if (value.length < 6) {
+                            return '비밀번호는 최소 6자 이상이어야 합니다.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 로그인 버튼
+                      SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _onLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: mainRed,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            '로그인',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // 회원가입 버튼
+                      TextButton(
+                        onPressed: _onSignUp,
+                        child: const Text(
+                          '이메일로 회원가입',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              // 추가 텍스트(선택)
+              const Text(
+                '법원·판결문 기반 AI 뉴스 서비스',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
