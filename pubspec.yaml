@@ -29,6 +29,9 @@ flutter:
 
   assets:
     - Assets/
+    - Assets/Images/Logo_black.png
+    - Assets/Images/Logo_gray.png
+    - Assets/Images/Logo_white.png
 
   fonts:
     - family: SUIT

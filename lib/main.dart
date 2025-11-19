@@ -146,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
     const mainRed = Color(0xFFb00000);
 
     return Scaffold(
-      backgroundColor: mainRed,
+      backgroundColor: Colors.black,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -156,18 +156,20 @@ class _LoginPageState extends State<LoginPage> {
               // 로고 영역 - 여기 나중에 이미지로 교체하면 됨
               Column(
                 children: [
-                  // TODO: 여기 Image.asset(...)으로 로고 넣으면 됨
-                  // 예: Image.asset('assets/courtify_logo.png', height: 80),
-                  const Icon(
-                    Icons.gavel_rounded,
-                    size: 72,
-                    color: Colors.white,
+                  Image.asset(
+                    'Assets/Images/Logo_white.png', // 실제 경로 이름 맞게
+                    height: 130,
                   ),
+                  // const Icon(
+                  //   Icons.gavel_rounded,
+                  //   size: 72,
+                  //   color: Colors.white,
+                  // ),
                   const SizedBox(height: 12),
                   const Text(
                     'COURTIFY',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: mainRed,
                       fontSize: 30,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 2.0,
@@ -196,15 +198,6 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        '로그인',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
                       // 이메일 입력
                       TextFormField(
                         controller: _emailController,
@@ -281,7 +274,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+
                       const Divider(),
                       const SizedBox(height: 8),
 
@@ -396,17 +389,20 @@ class _MyHomePageState extends State<MyHomePage> {
       '인천지방법원은 불법주차 차량이 보행자 사고를 유발한 사건에서 차량 소유주에게 70%의 과실 책임을 인정했다.'
     },
   ];
-
+  final mainRed = Color(0xFFb00000);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFb00000),
-        title: const Text(
+        backgroundColor: Colors.black,
+        iconTheme: IconThemeData(
+          color: mainRed,
+        ),
+        title: Text(
           'COURTIFY',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+            fontWeight: FontWeight.w900,
+            color: mainRed,
             letterSpacing: 1.0,
           ),
         ),
@@ -457,6 +453,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mainRed = Color(0xFFb00000);
     return Drawer(
       backgroundColor: const Color(0xFFEEF4EE),
       child: ListView(
@@ -464,7 +461,7 @@ class AppDrawer extends StatelessWidget {
         children: [
           const DrawerHeader(
             decoration: BoxDecoration(
-              color: const Color(0xFFb00000),
+              color: Colors.black,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
