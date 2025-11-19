@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "75065448848",
+    "project_id": "courtify-298fe",
+    "storage_bucket": "courtify-298fe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75065448848:android:0f998d91b9478e0c0c3b15",
+        "android_client_info": {
+          "package_name": "com.example.courtify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75065448848-29mcu89l01u9l54t29p97plleef47qrb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC53wilJzodjZ7tsEHCwmBzpGYZmBVBs7E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75065448848-29mcu89l01u9l54t29p97plleef47qrb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

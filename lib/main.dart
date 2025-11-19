@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -43,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -51,23 +60,84 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _onLogin() {
-    if (_formKey.currentState!.validate()) {
-      // TODO: 실제 로그인 로직
-      // 지금은 그냥 홈 화면으로 이동
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const MyHomePage(title: 'COURTIFY'),
-        ),
+  Future<void> _signInWithEmail() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
+      _goToHome();
+    } on FirebaseAuthException catch (e) {
+      String msg = '로그인에 실패했습니다.';
+      if (e.code == 'user-not-found') {
+        msg = '가입되지 않은 이메일입니다.';
+      } else if (e.code == 'wrong-password') {
+        msg = '비밀번호가 올바르지 않습니다.';
+      }
+      _showError(msg);
     }
   }
 
-  void _onSignUp() {
-    // TODO: 회원가입 화면 따로 만들면 여기에서 네비게이션
+  Future<void> _signUpWithEmail() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      _goToHome();
+    } on FirebaseAuthException catch (e) {
+      String msg = '회원가입에 실패했습니다.';
+      if (e.code == 'email-already-in-use') {
+        msg = '이미 가입된 이메일입니다.';
+      }
+      _showError(msg);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return; // 취소
+
+      final googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await _auth.signInWithCredential(credential);
+      _goToHome();
+    } catch (_) {
+      _showError('Google 로그인 중 오류가 발생했습니다.');
+    }
+  }
+
+  Future<void> _signInAnonymously() async {
+    try {
+      await _auth.signInAnonymously();
+      _goToHome();
+    } catch (_) {
+      _showError('게스트 로그인 중 오류가 발생했습니다.');
+    }
+  }
+
+  void _goToHome() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MyHomePage(title: 'COURTIFY'),
+      ),
+    );
+  }
+
+  void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('회원가입 기능은 추후 추가 예정입니다.')),
+      SnackBar(content: Text(message)),
     );
   }
 
@@ -83,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 🔴 로고 영역 - 여기 나중에 이미지로 교체하면 됨
+              // 로고 영역 - 여기 나중에 이미지로 교체하면 됨
               Column(
                 children: [
                   // TODO: 여기 Image.asset(...)으로 로고 넣으면 됨
@@ -181,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: _onLogin,
+                          onPressed: _signInWithEmail,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: mainRed,
                             foregroundColor: Colors.white,
@@ -202,13 +272,34 @@ class _LoginPageState extends State<LoginPage> {
 
                       // 회원가입 버튼
                       TextButton(
-                        onPressed: _onSignUp,
+                        onPressed: _signUpWithEmail,
                         child: const Text(
                           '이메일로 회원가입',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 8),
+
+                      // Google 로그인
+                      SizedBox(
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: _signInWithGoogle,
+                          icon: const Icon(Icons.g_mobiledata), // 나중에 이미지 아이콘으로 교체 가능
+                          label: const Text('Google 계정으로 로그인'),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // 익명 로그인 (게스트 모드)
+                      TextButton(
+                        onPressed: _signInAnonymously,
+                        child: const Text('로그인 없이 둘러보기'),
                       ),
                     ],
                   ),
