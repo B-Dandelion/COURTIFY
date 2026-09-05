@@ -16,21 +16,16 @@ class _AiArticlePageState extends State<AiArticlePage> {
 
   bool _isLoading = false;
 
-  // ngrok 주소
-  static const String _baseUrl =
-      'https://interprismatic-moriah-championlike.ngrok-free.dev';
-
-  // 서버 엔드포인트
+  static const String _baseUrl = String.fromEnvironment(
+    'COURTIFY_API_BASE_URL',
+    defaultValue: 'http://127.0.0.1:8000',
+  );
   static const String _endpoint = '/summarize_input_text';
 
-  // 앱에서 제한할 글자수(원하는 값으로)
   static const int _maxTitleChars = 60;
   static const int _maxNoteChars = 500;
-
-  // 출력 길이(서버 모델이 받는 값)
   static const int _maxNewTokens = 400;
 
-  // 결과 텍스트(기사 렌더링용)
   String _resultText = '';
 
   @override
@@ -56,22 +51,24 @@ class _AiArticlePageState extends State<AiArticlePage> {
       _resultText = '';
     });
 
-    final uri = Uri.parse('$_baseUrl$_endpoint');
+    final normalizedBaseUrl = _baseUrl.endsWith('/')
+        ? _baseUrl.substring(0, _baseUrl.length - 1)
+        : _baseUrl;
+    final uri = Uri.parse('$normalizedBaseUrl$_endpoint');
     final inputText = '제목: $title\n\n내용:\n$note';
 
     try {
       final res = await http
           .post(
-        uri,
-        headers: const {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true',
-        },
-        body: jsonEncode({
-          'input_text': inputText,
-          'max_new_tokens': _maxNewTokens,
-        }),
-      )
+            uri,
+            headers: const {
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'input_text': inputText,
+              'max_new_tokens': _maxNewTokens,
+            }),
+          )
           .timeout(const Duration(seconds: 60));
 
       final bodyText = utf8.decode(res.bodyBytes);
@@ -98,20 +95,26 @@ class _AiArticlePageState extends State<AiArticlePage> {
         SnackBar(content: Text('기사 생성 중 오류: $e')),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
-  // 결과를 "문단" 단위로 보기 좋게 쪼개기
   List<String> _splitParagraphs(String text) {
     final cleaned = text.replaceAll('\r\n', '\n').trim();
     if (cleaned.isEmpty) return const [];
-    // 빈 줄 기준 문단 분리, 그래도 안 나뉘면 한 줄씩이라도 분리
+
     final paras = cleaned.split(RegExp(r'\n\s*\n'));
     if (paras.length > 1) {
       return paras.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
     }
-    final lines = cleaned.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+
+    final lines = cleaned
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
     return lines.isNotEmpty ? lines : [cleaned];
   }
 
@@ -139,7 +142,6 @@ class _AiArticlePageState extends State<AiArticlePage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // 제목 입력
             TextField(
               controller: _titleController,
               maxLength: _maxTitleChars,
@@ -151,8 +153,6 @@ class _AiArticlePageState extends State<AiArticlePage> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // 메모 입력
             TextField(
               controller: _noteController,
               maxLength: _maxNoteChars,
@@ -167,8 +167,6 @@ class _AiArticlePageState extends State<AiArticlePage> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // 생성 버튼
             SizedBox(
               height: 44,
               child: ElevatedButton(
@@ -182,22 +180,20 @@ class _AiArticlePageState extends State<AiArticlePage> {
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
                     : const Text(
-                  'AI로 기사 초안 생성',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                        'AI로 기사 초안 생성',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
             const SizedBox(height: 16),
-
-            // 결과(기사 렌더링)
             _ArticlePreviewCard(
               headline: _titleController.text.trim(),
               lede: lede,
@@ -206,12 +202,12 @@ class _AiArticlePageState extends State<AiArticlePage> {
               onCopy: _resultText.trim().isEmpty
                   ? null
                   : () async {
-                await Clipboard.setData(ClipboardData(text: _resultText));
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('기사 내용을 복사했습니다.')),
-                );
-              },
+                      await Clipboard.setData(ClipboardData(text: _resultText));
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('기사 내용을 복사했습니다.')),
+                      );
+                    },
             ),
           ],
         ),
@@ -246,58 +242,55 @@ class _ArticlePreviewCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: isEmpty
             ? const Text(
-          '여기에 생성된 기사 초안이 기사 형태로 표시됩니다.',
-          style: TextStyle(color: Colors.black54),
-        )
+                '여기에 생성된 기사 초안이 기사 형태로 표시됩니다.',
+                style: TextStyle(color: Colors.black54),
+              )
             : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              h,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                height: 1.25,
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            if (lede.trim().isNotEmpty)
-              Text(
-                lede.trim(),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  height: 1.5,
-                ),
-              ),
-
-            if (bodyParagraphs.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              const Divider(height: 1),
-              const SizedBox(height: 14),
-              ...bodyParagraphs.map(
-                    (p) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    p.trim(),
-                    style: const TextStyle(fontSize: 15, height: 1.7),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    h,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      height: 1.25,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  if (lede.trim().isNotEmpty)
+                    Text(
+                      lede.trim(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        height: 1.5,
+                      ),
+                    ),
+                  if (bodyParagraphs.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    const Divider(height: 1),
+                    const SizedBox(height: 14),
+                    ...bodyParagraphs.map(
+                      (p) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          p.trim(),
+                          style: const TextStyle(fontSize: 15, height: 1.7),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: onCopy,
+                      icon: const Icon(Icons.copy, size: 18),
+                      label: const Text('복사'),
+                    ),
+                  ),
+                ],
               ),
-            ],
-
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: onCopy,
-                icon: const Icon(Icons.copy, size: 18),
-                label: const Text('복사'),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
