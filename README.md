@@ -200,21 +200,24 @@ courtify_server/
 
 ### Flutter App
 
+API 주소는 소스 코드에 개인 개발용 URL을 고정하지 않고 `--dart-define`으로 전달합니다.
+
 ```bash
 flutter pub get
-flutter run
+flutter run --dart-define=COURTIFY_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-앱에서 사용할 API base URL은 실제 FastAPI 서버 또는 ngrok HTTPS 주소와 일치하도록 설정해야 합니다.
+실기기에서 실행할 경우 `COURTIFY_API_BASE_URL`에는 기기에서 접근 가능한 FastAPI 서버 주소를 지정해야 합니다.
 
 ### FastAPI Server
 
+서버의 모델 경로 역시 환경 변수로 전달합니다.
+
 ```bash
 pip install -r requirements.txt
+export MODEL_DIR=/path/to/kobart-legal-summary-model
 uvicorn server_v1:app --host 127.0.0.1 --port 8000
 ```
-
-서버 코드의 `MODEL_DIR`은 로컬 KoBART 모델 경로에 맞게 설정해야 합니다.
 
 ## Limitations
 
