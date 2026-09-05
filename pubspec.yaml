@@ -1,5 +1,5 @@
 name: courtify
-description: "파이썬기반딥러닝 수업 프로젝트 MVP 용 앱/웹 UI 개발 Flutter 프로젝트. 붉은 색을 테마로 법률문을 입력받아 AI API가 자동으로 기사문으로 작성해줌. 이를 기사 형식으로 표시하는 앱/웹을 개발."
+description: "법률신문 기사 작성 지원을 위한 NLP/KoBART 수업 프로젝트 프로토타입 Flutter 클라이언트."
 
 publish_to: 'none'
 
